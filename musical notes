@@ -134,4 +134,110 @@ contract MusicNotesRevenue {
     }
 }
 
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
 
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract MusicNotesNFT is ERC721, Ownable {
+
+    uint256 public nextTokenId; // Counter for token IDs
+    mapping(uint256 => string) private _tokenURIs; // Metadata URIs
+
+    struct Song {
+        string title;       // Song title
+        string genre;       // Genre of the song
+        string videoURI;    // Optional Video URI (e.g., IPFS or YouTube)
+        address artist;     // Owner/creator of the song
+    }
+
+    // Predefined list of genres
+    string[] public genres = [
+        "Classical",
+        "Rock",
+        "Pop",
+        "Jazz",
+        "Dance",
+        "House",
+        "Hip-Hop",
+        "Blues",
+        "Folk",
+        "Country",
+        "Reggae",
+        "Electronic",
+        "RnB",
+        "Indie",
+        "Disco"
+    ];
+
+    // Mapping to store song details
+    mapping(uint256 => Song) public songs;
+
+    // Mapping to index songs by genre
+    mapping(string => uint256[]) public songsByGenre; 
+
+    constructor() ERC721("Music Notes Token", "MNOTE") {}
+
+    // Function to mint a new Music NFT with genre and optional video
+    function mintSongNFT(
+        address artist,
+        string calldata title,
+        string calldata metadataURI,
+        string calldata genre,
+        string calldata videoURI
+    ) external onlyOwner returns (uint256) {
+        // Validate the genre
+        require(isValidGenre(genre), "Invalid genre");
+
+        uint256 tokenId = nextTokenId;
+        nextTokenId++;
+
+        // Mint the NFT
+        _safeMint(artist, tokenId);
+        _tokenURIs[tokenId] = metadataURI;
+
+        // Add song details
+        songs[tokenId] = Song({
+            title: title,
+            genre: genre,
+            videoURI: videoURI,
+            artist: artist
+        });
+
+        // Add the token to the genre-based index
+        songsByGenre[genre].push(tokenId);
+
+        return tokenId;
+    }
+
+    // Function to check if a genre is valid
+    function isValidGenre(string calldata genre) public view returns (bool) {
+        for (uint256 i = 0; i < genres.length; i++) {
+            if (keccak256(abi.encodePacked(genres[i])) == keccak256(abi.encodePacked(genre))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Function to add a new genre to the list (only by the owner)
+    function addNewGenre(string calldata newGenre) external onlyOwner {
+        genres.push(newGenre);
+    }
+
+    // Override tokenURI to fetch song metadata
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        return _tokenURIs[tokenId];
+    }
+
+    // Get all tokens in a specific genre
+    function getSongsByGenre(string calldata genre) external view returns (uint256[] memory) {
+        return songsByGenre[genre];
+    }
+
+    // Get all genres
+    function getAllGenres() external view returns (string[] memory) {
+        return genres;
+    }
+}
