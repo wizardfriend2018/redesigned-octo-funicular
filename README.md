@@ -48,8 +48,7 @@ contract RetirementLedgerAnchor {
 
     function anchorLedger(bytes32 _ledgerHash) external {
         snapshots[snapshotCount] = Snapshot(
-            block.timestamp,
-            _ledgerHash
+            block.timestam
         );
         snapshotCount++;
     }
@@ -63,62 +62,13 @@ contract RetirementLedgerAnchor {
     years = retirement_age - current_age
     balance = current_balance
 
-    for _ in range(years):
-        balance = balance * (1 + annual_return) + annual_contribution
-
-    return round(balance, 2)
-
-
-    TABLE jade_ledger (
-  ledger_id UUID PRIMARY KEY,
-  token_id UUID,
-  action TEXT,
-  payload_hash TEXT,
-  previous_hash TEXT,
-  current_hash TEXT,
-  signature TEXT,
-  timestamp TIMESTAMP
-);TABLE tokens (
-  token_id UUID PRIMARY KEY,
-  token_name TEXT DEFAULT 'JADE',
-  token_config_id TEXT,        -- one of the 70 hexagon configs
-  public_key TEXT NOT NULL,
-  company_tag TEXT NOT NULL,
-  status TEXT CHECK (status IN ('active','revoked','frozen')),
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-);[ Application Layer ]
-        |
-        v
-[ Token Service ]
-   |        |
-   |        +--> [ HSM / Vault ] (private keys)
-   |
-   +--> [ PostgreSQL ]
-        |--> token metadata
-        |--> policy TABLE jade_ledger (
-  ledger_id UUID PRIMARY KEY,
-  token_id UUID,
-  action TEXT,
-  payload_hash TEXT,
-  previous_hash TEXT,
-  current_hash TEXT,
-  signature TEXT,
-  timestamp TIMESTAMP
-);-> immutable ledger
+    
 
 
 
 
-[ Staff / Teams ]
-        |
-[ Role-Based Access ]
-        |
-[ Internal Ledgers ]
-  |     |     |
- Tokens Staff Finance
-        |
-[ Secure Storage + Audit ]
+
+[ Staff / 
 
 employee_id
 full_name
@@ -130,38 +80,7 @@ pay_rate
 payment_schedule
 ledger_permissions
 performance_notes
-status (active / suspended / terminated)
+/ suspended / terminated)
 
 
-employee_id
-full_name
-role
-department
-access_level
-employment_type (contract / full-time)
-pay_rate
-payment_schedule
-ledger_permissions
-performance_notes
-status (active / suspended / terminated)
 
-employee_id
-full_name
-role
-hire_date
-employment_type (salary)
-status
-benefits_eligible (yes/no)
-eligibility_date
-401k_enrolled (yes/no)
-401k_contribution_pct
-company_match_pct
-healthcare_plan
-dental_plan
-vision_plan
-benefits_notes
-last_review_date
-
-IF (today - hire_date) >= 730 days
-AND status = active
-THEN benefits_eligible = YES
